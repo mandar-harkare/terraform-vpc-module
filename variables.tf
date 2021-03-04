@@ -37,8 +37,8 @@ variable "aws_region_map" {
 }
 
 variable "account_code" {
-  description = "Forcepint account code."
-  default     = 365761988620
+  description = "AWS account code."
+  default     = 0000000000
 }
 
 variable "stage_full_name" {
