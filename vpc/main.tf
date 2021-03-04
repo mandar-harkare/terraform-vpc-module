@@ -1,42 +1,3 @@
-resource "aws_dynamodb_table" "terraform_dynamodb_table" {
-  name         = "dyn-${var.short_region}-cpt-${var.stage}-${var.table_name}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  point_in_time_recovery = {
-    enabled = true
-  }
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  ttl {
-    enabled = true
-    attribute_name = "ttl"
-  }
-
-  tags = "${merge(var.aws_tags, var.aws_backup_tags)}"
-}
-
-resource "aws_dynamodb_table" "tenant_lock_dynamodb_table" {
-  name         = "dyn-${var.short_region}-cpt-${var.stage}-${var.service_name}-${var.tenant_lock_table_name}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  point_in_time_recovery = {
-    enabled = true
-  }
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  tags = "${merge(var.aws_tags, var.aws_backup_tags)}"
-}
-
 /*==== The VPC ======*/
 resource "aws_vpc" "mastercard_vpc" {
   cidr_block           = "${var.vpc_cidr}"
@@ -62,7 +23,7 @@ resource "aws_eip" "mastercard_nat_eip" {
 /* NAT */
 resource "aws_nat_gateway" "mastercard_nat" {
   allocation_id = "${aws_eip.mastercard_nat_eip.id}"
-  subnet_id     = "${element(aws_subnet.public_subnet.*.id, 0)}"
+  subnet_id     = "${element(aws_subnet.mastercard_public_subnet.*.id, 0)}"
   depends_on    = [aws_internet_gateway.mastercard_ig]
   tags = {
     Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}"

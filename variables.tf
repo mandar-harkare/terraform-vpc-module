@@ -8,6 +8,11 @@ variable "stage" {
   default     = "d"
 }
 
+variable "environment" {
+  description = "Environment for deployment."
+  default     = "d"
+}
+
 variable "aws_region" {
   description = "Region for deployment."
   default     = "us-east-1"
@@ -15,7 +20,7 @@ variable "aws_region" {
 
 variable "aws_region_map" {
   description = "Forcepoint AWS region name by AWS region"
-  type        = "map"
+  type        = map
 
   default = {
     ap-south-1     = "aps1"
@@ -50,16 +55,27 @@ variable "aws_tags" {
   description = "variable name for tagging"
   type        = "map"
   default     = {
-    "fp-application-version" = "unknown"
+    "application" = "mastercard"
   }
 }
 
-variable "log_level" {
-  description = "Log Level"
+variable "vpc_cidr" {
+  description = "VPC cidr"
   default = "info"
 }
 
-variable "gateway_logging_level" {
-  description = "The Api Gateway logging level, defaults to ERROR"
-  default = "ERROR"
+variable "public_subnets_cidr" {
+  description = "Public Subnets cidr"
+  default = ""
 }
+
+variable "private_subnets_cidr" {
+  description = "Private Subnets cidr"
+  default = ""
+}
+
+variable "availability_zones" {
+  description = "Availability zines for subnets"
+  default = ""
+}
+
