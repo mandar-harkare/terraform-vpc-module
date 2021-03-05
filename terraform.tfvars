@@ -5,4 +5,7 @@ environment="dev"
 vpc_cidr= "10.0.0.0/16"
 public_subnets_cidr=["10.0.0.0/24"]
 private_subnets_cidr=["10.0.16.0/20"]
-availability_zones=["us-east-1a"]
+availability_zones=["us-east-1a", "us-east-1b"]
+aws_tags={
+    "application" = "mhdemo"
+}

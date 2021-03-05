@@ -2,20 +2,18 @@ resource "aws_lb" "mhdemo-alb" {
   name               = "lb-${var.short_region}-${var.environment}-${var.service_name}"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_sg.id]
-  subnets            = aws_subnet.public.*.id
+  security_groups    = [var.public_sg_id]
+  subnets            = var.public_subnet_ids
 
   enable_deletion_protection = true
 
-  access_logs {
-    bucket  = aws_s3_bucket.lb_logs.bucket
-    prefix  = "test-lb"
-    enabled = true
-  }
+  # access_logs {
+  #   bucket  = aws_s3_bucket.lb_logs.bucket
+  #   prefix  = "test-lb"
+  #   enabled = true
+  # }
 
-  tags = {
-    Environment = "production"
-  }
+  tags = var.aws_tags
 }
 
 # Create a new load balancer attachment

@@ -12,3 +12,29 @@ module "vpc" {
   private_subnets_cidr  = "${var.private_subnets_cidr}"
   availability_zones    = "${var.availability_zones}"
 }
+
+module "elb" {
+  source = "./elb"
+
+  short_region          = lookup(var.aws_region_map, var.aws_region)
+  aws_region            = "${var.aws_region}"
+  service_name          = "${var.service_name}"
+  aws_tags              = "${var.aws_tags}"
+  environment           = "${var.environment}"
+  asg_id                = "${module.asg.asg_id}"
+  public_sg_id          = "${module.vpc.public_sg_id}"
+  public_subnet_ids     = ["${module.vpc.public_subnet_id_1}", "${module.vpc.public_subnet_id_2}"]
+}
+
+module "asg" {
+  source = "./asg"
+
+  short_region          = lookup(var.aws_region_map, var.aws_region)
+  aws_region            = "${var.aws_region}"
+  service_name          = "${var.service_name}"
+  aws_tags              = "${var.aws_tags}"
+  environment           = "${var.environment}"
+  private_sg_id         = "${module.vpc.private_sg_id}"
+  private_subnet_ids    = ["${module.vpc.private_subnet_id_1}", "${module.vpc.private_subnet_id_2}"]
+  availability_zones    = "${var.availability_zones}"
+}

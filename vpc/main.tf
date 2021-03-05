@@ -21,37 +21,71 @@ resource "aws_eip" "mhdemo_nat_eip" {
   depends_on = [aws_internet_gateway.mhdemo_ig]
 }
 /* NAT */
-resource "aws_nat_gateway" "mhdemo_nat" {
+resource "aws_nat_gateway" "mhdemo_nat_1" {
   allocation_id = aws_eip.mhdemo_nat_eip.id
-  subnet_id     = element(aws_subnet.mhdemo_public_subnet.*.id, 0)
+  subnet_id     = element(aws_subnet.mhdemo_public_subnet_1.*.id, 0)
   depends_on    = [aws_internet_gateway.mhdemo_ig]
   tags = {
     Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}"
     Environment = var.environment
   }
 }
-/* Public subnet */
-resource "aws_subnet" "mhdemo_public_subnet" {
-  vpc_id                  = aws_vpc.mhdemo_vpc.id
-  count                   = length(var.public_subnets_cidr)
-  cidr_block              = element(var.public_subnets_cidr,   count.index)
-  availability_zone       = element(var.availability_zones,   count.index)
-  map_public_ip_on_launch = true
+
+resource "aws_nat_gateway" "mhdemo_nat_2" {
+  allocation_id = aws_eip.mhdemo_nat_eip.id
+  subnet_id     = element(aws_subnet.mhdemo_public_subnet_2.*.id, 0)
+  depends_on    = [aws_internet_gateway.mhdemo_ig]
   tags = {
-    Name        = "public-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, count.index)}"
+    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}"
+    Environment = var.environment
   }
 }
-/* Private subnet */
-resource "aws_subnet" "mhdemo_private_subnet" {
+/* Public subnets */
+resource "aws_subnet" "mhdemo_public_subnet_1" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.public_subnets_cidr)
+  cidr_block              = element(var.public_subnets_cidr, count.index)
+  availability_zone       = element(var.availability_zones, 0)
+  map_public_ip_on_launch = true
+  tags = {
+    Name        = "public-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 0)}"
+  }
+}
+
+resource "aws_subnet" "mhdemo_public_subnet_2" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.public_subnets_cidr)
+  cidr_block              = element(var.public_subnets_cidr, count.index)
+  availability_zone       = element(var.availability_zones, 1)
+  map_public_ip_on_launch = true
+  tags = {
+    Name        = "public-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 1)}"
+  }
+}
+
+/* Private subnets */
+resource "aws_subnet" "mhdemo_private_subnet_1" {
   vpc_id                  = aws_vpc.mhdemo_vpc.id
   count                   = length(var.private_subnets_cidr)
   cidr_block              = element(var.private_subnets_cidr, count.index)
-  availability_zone       = element(var.availability_zones,   count.index)
+  availability_zone       = element(var.availability_zones, 0)
   map_public_ip_on_launch = false
   tags = {
-    Name        = "private-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, count.index)}"
+    Name        = "private-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 0)}"
   }
 }
+
+resource "aws_subnet" "mhdemo_private_subnet_2" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.private_subnets_cidr)
+  cidr_block              = element(var.private_subnets_cidr, count.index)
+  availability_zone       = element(var.availability_zones, 1)
+  map_public_ip_on_launch = false
+  tags = {
+    Name        = "private-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 1)}"
+  }
+}
+
 /* Routing table for private subnet */
 resource "aws_route_table" "mhdemo_private" {
   vpc_id = aws_vpc.mhdemo_vpc.id
@@ -71,42 +105,85 @@ resource "aws_route" "mhdemo_public_internet_gateway" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.mhdemo_ig.id
 }
-resource "aws_route" "mhdemo_private_nat_gateway" {
+resource "aws_route" "mhdemo_private_nat_gateway_1" {
   route_table_id         = aws_route_table.mhdemo_private.id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.mhdemo_nat.id
+  nat_gateway_id         = aws_nat_gateway.mhdemo_nat_1.id
+}
+resource "aws_route" "mhdemo_private_nat_gateway_2" {
+  route_table_id         = aws_route_table.mhdemo_private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.mhdemo_nat_2.id
 }
 /* Route table associations */
-resource "aws_route_table_association" "mhdemo_public" {
+resource "aws_route_table_association" "mhdemo_public_1" {
   count          = length(var.public_subnets_cidr)
-  subnet_id      = element(aws_subnet.mhdemo_public_subnet.*.id, count.index)
+  subnet_id      = element(aws_subnet.mhdemo_public_subnet_1.*.id, 0)
   route_table_id = aws_route_table.mhdemo_public.id
 }
-resource "aws_route_table_association" "mhdemo_private" {
+
+resource "aws_route_table_association" "mhdemo_public_2" {
+  count          = length(var.public_subnets_cidr)
+  subnet_id      = element(aws_subnet.mhdemo_public_subnet_2.*.id, 0)
+  route_table_id = aws_route_table.mhdemo_public.id
+}
+
+resource "aws_route_table_association" "mhdemo_private_1" {
   count          = length(var.private_subnets_cidr)
-  subnet_id      = element(aws_subnet.mhdemo_private_subnet.*.id, count.index)
+  subnet_id      = element(aws_subnet.mhdemo_private_subnet_1.*.id, 0)
   route_table_id = aws_route_table.mhdemo_private.id
 }
-/*==== VPC's Default Security Group ======*/
-resource "aws_security_group" "default" {
-  name        = "sec-${var.short_region}-${var.environment}-${var.service_name}"
-  description = "Default security group to allow inbound/outbound from the VPC"
+
+resource "aws_route_table_association" "mhdemo_private_2" {
+  count          = length(var.private_subnets_cidr)
+  subnet_id      = element(aws_subnet.mhdemo_private_subnet_2.*.id, 0)
+  route_table_id = aws_route_table.mhdemo_private.id
+}
+
+/*==== VPC's Security Groups ======*/
+resource "aws_security_group" "mhdemo_public_sg" {
+  name        = "sec-pblc-${var.short_region}-${var.environment}-${var.service_name}"
+  description = "Public security group to allow inbound/outbound from the VPC"
   vpc_id      = aws_vpc.mhdemo_vpc.id
   depends_on  = [aws_vpc.mhdemo_vpc]
   ingress {
-    from_port = "0"
-    to_port   = "0"
-    protocol  = "-1"
-    self      = true
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-  
-  egress {
-    from_port = "0"
-    to_port   = "0"
-    protocol  = "-1"
-    self      = "true"
+  ingress {
+    description = "HTTP from VPC"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Environment = var.environment
+
+  tags = var.aws_tags
+}
+
+resource "aws_security_group" "mhdemo_private_sg" {
+  name        = "sec-prvt-${var.short_region}-${var.environment}-${var.service_name}"
+  description = "Private security group to allow inbound/outbound from the VPC"
+  vpc_id      = aws_vpc.mhdemo_vpc.id
+  depends_on  = [aws_vpc.mhdemo_vpc]
+  ingress {
+    description = "HTTPs from LB"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    security_groups = [aws_security_group.mhdemo_public_sg.id]
   }
+
+  ingress {
+    description = "HTTP from LB"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    security_groups = [aws_security_group.mhdemo_public_sg.id]
+  }
+
+  tags = var.aws_tags
 }

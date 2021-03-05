@@ -1,8 +1,9 @@
 variable "service_name" {}
 variable "environment" {}
 variable "short_region" {}
-variable "vpc_cidr" {}
-variable "public_subnets_cidr" {}
-variable "private_subnets_cidr" {}
-variable "availability_zones" {}
+variable "aws_region" {}
+variable "asg_id" {}
+variable "aws_tags" {}
+variable "public_sg_id" {}
+variable "public_subnet_ids" {}
 
