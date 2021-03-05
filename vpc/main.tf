@@ -16,27 +16,31 @@ resource "aws_internet_gateway" "mhdemo_ig" {
   }
 }
 /* Elastic IP for NAT */
-resource "aws_eip" "mhdemo_nat_eip" {
+resource "aws_eip" "mhdemo_nat_eip_1" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.mhdemo_ig]
+}
+resource "aws_eip" "mhdemo_nat_eip_2" {
   vpc        = true
   depends_on = [aws_internet_gateway.mhdemo_ig]
 }
 /* NAT */
 resource "aws_nat_gateway" "mhdemo_nat_1" {
-  allocation_id = aws_eip.mhdemo_nat_eip.id
+  allocation_id = aws_eip.mhdemo_nat_eip_1.id
   subnet_id     = element(aws_subnet.mhdemo_public_subnet_1.*.id, 0)
   depends_on    = [aws_internet_gateway.mhdemo_ig]
   tags = {
-    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}"
+    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}-1"
     Environment = var.environment
   }
 }
 
 resource "aws_nat_gateway" "mhdemo_nat_2" {
-  allocation_id = aws_eip.mhdemo_nat_eip.id
+  allocation_id = aws_eip.mhdemo_nat_eip_2.id
   subnet_id     = element(aws_subnet.mhdemo_public_subnet_2.*.id, 0)
   depends_on    = [aws_internet_gateway.mhdemo_ig]
   tags = {
-    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}"
+    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}-2"
     Environment = var.environment
   }
 }
@@ -87,10 +91,16 @@ resource "aws_subnet" "mhdemo_private_subnet_2" {
 }
 
 /* Routing table for private subnet */
-resource "aws_route_table" "mhdemo_private" {
+resource "aws_route_table" "mhdemo_private_1" {
   vpc_id = aws_vpc.mhdemo_vpc.id
   tags = {
-    Name        = "private-route-table-${var.short_region}-${var.environment}-${var.service_name}"
+    Name        = "private-route-table-${var.short_region}-${var.environment}-${var.service_name}-1"
+  }
+}
+resource "aws_route_table" "mhdemo_private_2" {
+  vpc_id = aws_vpc.mhdemo_vpc.id
+  tags = {
+    Name        = "private-route-table-${var.short_region}-${var.environment}-${var.service_name}-2"
   }
 }
 /* Routing table for public subnet */
@@ -106,12 +116,12 @@ resource "aws_route" "mhdemo_public_internet_gateway" {
   gateway_id             = aws_internet_gateway.mhdemo_ig.id
 }
 resource "aws_route" "mhdemo_private_nat_gateway_1" {
-  route_table_id         = aws_route_table.mhdemo_private.id
+  route_table_id         = aws_route_table.mhdemo_private_1.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.mhdemo_nat_1.id
 }
 resource "aws_route" "mhdemo_private_nat_gateway_2" {
-  route_table_id         = aws_route_table.mhdemo_private.id
+  route_table_id         = aws_route_table.mhdemo_private_2.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.mhdemo_nat_2.id
 }
@@ -131,13 +141,13 @@ resource "aws_route_table_association" "mhdemo_public_2" {
 resource "aws_route_table_association" "mhdemo_private_1" {
   count          = length(var.private_subnets_cidr_1)
   subnet_id      = element(aws_subnet.mhdemo_private_subnet_1.*.id, 0)
-  route_table_id = aws_route_table.mhdemo_private.id
+  route_table_id = aws_route_table.mhdemo_private_1.id
 }
 
 resource "aws_route_table_association" "mhdemo_private_2" {
   count          = length(var.private_subnets_cidr_2)
   subnet_id      = element(aws_subnet.mhdemo_private_subnet_2.*.id, 0)
-  route_table_id = aws_route_table.mhdemo_private.id
+  route_table_id = aws_route_table.mhdemo_private_2.id
 }
 
 /*==== VPC's Security Groups ======*/

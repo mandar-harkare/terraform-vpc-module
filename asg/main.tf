@@ -14,17 +14,18 @@ data "aws_ami" "ubuntu" {
   owners = ["amazon"] # Canonical
 }
 
-# resource "aws_efs_file_system" "mhdemo-log-volume" {
+# resource "aws_efs_file_system" "mhdemo_log_volume" {
 #   creation_token = "ebs-lc-${var.short_region}-${var.environment}-${var.service_name}"
 #   encrypted      = "true"
 # }
 
-resource "aws_launch_configuration" "mhdemo-launch-config" {
+resource "aws_launch_configuration" "mhdemo_launch_config" {
   name_prefix     = "lc-${var.short_region}-${var.environment}-${var.service_name}"
   image_id        = data.aws_ami.ubuntu.id
   instance_type   = "t2.micro"
   user_data       = file("install_apache.sh")
   security_groups = [var.private_sg_id]
+  key_name        = "demomh-key-pair"
   # dynamic "root_block_device" {
   #   content {
   #     delete_on_termination = "true"
@@ -45,16 +46,16 @@ resource "aws_launch_configuration" "mhdemo-launch-config" {
   }
 }
 
-resource "aws_autoscaling_group" "mhdemo-asg" {
+resource "aws_autoscaling_group" "mhdemo_asg" {
   name                  = "asg-${var.short_region}-${var.environment}-${var.service_name}"
-  launch_configuration  = aws_launch_configuration.mhdemo-launch-config.name
+  launch_configuration  = aws_launch_configuration.mhdemo_launch_config.name
   min_size              = 1
   desired_capacity      = 1
   max_size              = 2
   vpc_zone_identifier   = var.private_subnet_ids
-  load_balancers = [
-    var.elb_id
-  ]
+  # load_balancers = [
+  #   var.elb_id
+  # ]
   lifecycle {
     create_before_destroy = true
   }

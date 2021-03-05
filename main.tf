@@ -24,6 +24,7 @@ module "elb" {
   aws_tags              = "${var.aws_tags}"
   environment           = "${var.environment}"
   asg_id                = "${module.asg.asg_id}"
+  vpc_id                = "${module.vpc.vpc_id}"
   public_sg_id          = "${module.vpc.public_sg_id}"
   public_subnet_ids     = ["${module.vpc.public_subnet_id_1}", "${module.vpc.public_subnet_id_2}"]
 }
