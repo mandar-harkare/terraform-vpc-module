@@ -8,8 +8,10 @@ module "vpc" {
   account_code          = "${var.account_code}"
   environment           = "${var.environment}"
   vpc_cidr              = "${var.vpc_cidr}"
-  public_subnets_cidr   = "${var.public_subnets_cidr}"
-  private_subnets_cidr  = "${var.private_subnets_cidr}"
+  public_subnets_cidr_1 = "${var.public_subnets_cidr_1}"
+  private_subnets_cidr_1= "${var.private_subnets_cidr_1}"
+  public_subnets_cidr_2 = "${var.public_subnets_cidr_2}"
+  private_subnets_cidr_2= "${var.private_subnets_cidr_2}"
   availability_zones    = "${var.availability_zones}"
 }
 
@@ -33,6 +35,7 @@ module "asg" {
   aws_region            = "${var.aws_region}"
   service_name          = "${var.service_name}"
   aws_tags              = "${var.aws_tags}"
+  elb_id                = "${module.elb.elb_id}"
   environment           = "${var.environment}"
   private_sg_id         = "${module.vpc.private_sg_id}"
   private_subnet_ids    = ["${module.vpc.private_subnet_id_1}", "${module.vpc.private_subnet_id_2}"]

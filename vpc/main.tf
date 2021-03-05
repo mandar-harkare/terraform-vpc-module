@@ -43,8 +43,8 @@ resource "aws_nat_gateway" "mhdemo_nat_2" {
 /* Public subnets */
 resource "aws_subnet" "mhdemo_public_subnet_1" {
   vpc_id                  = aws_vpc.mhdemo_vpc.id
-  count                   = length(var.public_subnets_cidr)
-  cidr_block              = element(var.public_subnets_cidr, count.index)
+  count                   = length(var.public_subnets_cidr_1)
+  cidr_block              = element(var.public_subnets_cidr_1, count.index)
   availability_zone       = element(var.availability_zones, 0)
   map_public_ip_on_launch = true
   tags = {
@@ -54,8 +54,8 @@ resource "aws_subnet" "mhdemo_public_subnet_1" {
 
 resource "aws_subnet" "mhdemo_public_subnet_2" {
   vpc_id                  = aws_vpc.mhdemo_vpc.id
-  count                   = length(var.public_subnets_cidr)
-  cidr_block              = element(var.public_subnets_cidr, count.index)
+  count                   = length(var.public_subnets_cidr_2)
+  cidr_block              = element(var.public_subnets_cidr_2, count.index)
   availability_zone       = element(var.availability_zones, 1)
   map_public_ip_on_launch = true
   tags = {
@@ -66,8 +66,8 @@ resource "aws_subnet" "mhdemo_public_subnet_2" {
 /* Private subnets */
 resource "aws_subnet" "mhdemo_private_subnet_1" {
   vpc_id                  = aws_vpc.mhdemo_vpc.id
-  count                   = length(var.private_subnets_cidr)
-  cidr_block              = element(var.private_subnets_cidr, count.index)
+  count                   = length(var.private_subnets_cidr_1)
+  cidr_block              = element(var.private_subnets_cidr_1, count.index)
   availability_zone       = element(var.availability_zones, 0)
   map_public_ip_on_launch = false
   tags = {
@@ -77,8 +77,8 @@ resource "aws_subnet" "mhdemo_private_subnet_1" {
 
 resource "aws_subnet" "mhdemo_private_subnet_2" {
   vpc_id                  = aws_vpc.mhdemo_vpc.id
-  count                   = length(var.private_subnets_cidr)
-  cidr_block              = element(var.private_subnets_cidr, count.index)
+  count                   = length(var.private_subnets_cidr_2)
+  cidr_block              = element(var.private_subnets_cidr_2, count.index)
   availability_zone       = element(var.availability_zones, 1)
   map_public_ip_on_launch = false
   tags = {
@@ -117,25 +117,25 @@ resource "aws_route" "mhdemo_private_nat_gateway_2" {
 }
 /* Route table associations */
 resource "aws_route_table_association" "mhdemo_public_1" {
-  count          = length(var.public_subnets_cidr)
+  count          = length(var.public_subnets_cidr_1)
   subnet_id      = element(aws_subnet.mhdemo_public_subnet_1.*.id, 0)
   route_table_id = aws_route_table.mhdemo_public.id
 }
 
 resource "aws_route_table_association" "mhdemo_public_2" {
-  count          = length(var.public_subnets_cidr)
+  count          = length(var.public_subnets_cidr_2)
   subnet_id      = element(aws_subnet.mhdemo_public_subnet_2.*.id, 0)
   route_table_id = aws_route_table.mhdemo_public.id
 }
 
 resource "aws_route_table_association" "mhdemo_private_1" {
-  count          = length(var.private_subnets_cidr)
+  count          = length(var.private_subnets_cidr_1)
   subnet_id      = element(aws_subnet.mhdemo_private_subnet_1.*.id, 0)
   route_table_id = aws_route_table.mhdemo_private.id
 }
 
 resource "aws_route_table_association" "mhdemo_private_2" {
-  count          = length(var.private_subnets_cidr)
+  count          = length(var.private_subnets_cidr_2)
   subnet_id      = element(aws_subnet.mhdemo_private_subnet_2.*.id, 0)
   route_table_id = aws_route_table.mhdemo_private.id
 }

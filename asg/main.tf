@@ -25,7 +25,6 @@ resource "aws_launch_configuration" "mhdemo-launch-config" {
   instance_type   = "t2.micro"
   user_data       = file("install_apache.sh")
   security_groups = [var.private_sg_id]
-
   # dynamic "root_block_device" {
   #   content {
   #     delete_on_termination = "true"
@@ -53,7 +52,9 @@ resource "aws_autoscaling_group" "mhdemo-asg" {
   desired_capacity      = 1
   max_size              = 2
   vpc_zone_identifier   = var.private_subnet_ids
-
+  load_balancers = [
+    var.elb_id
+  ]
   lifecycle {
     create_before_destroy = true
   }

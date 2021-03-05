@@ -64,13 +64,23 @@ variable "vpc_cidr" {
   default = "info"
 }
 
-variable "public_subnets_cidr" {
-  description = "Public Subnets cidr"
+variable "public_subnets_cidr_1" {
+  description = "Public Subnets cidr for first subnet"
   default = ""
 }
 
-variable "private_subnets_cidr" {
-  description = "Private Subnets cidr"
+variable "private_subnets_cidr_1" {
+  description = "Private Subnets cidr for first subnet"
+  default = ""
+}
+
+variable "public_subnets_cidr_2" {
+  description = "Public Subnets cidr for second subnet"
+  default = ""
+}
+
+variable "private_subnets_cidr_2" {
+  description = "Private Subnets cidr for second subnet"
   default = ""
 }
 
