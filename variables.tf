@@ -1,6 +1,6 @@
 variable "service_name" {
   description = "The string service name."
-  default     = "mastercard"
+  default     = "mhdemo"
 }
 
 variable "stage" {
@@ -53,9 +53,9 @@ variable "stage_full_name" {
 
 variable "aws_tags" {
   description = "variable name for tagging"
-  type        = "map"
+  type        = map
   default     = {
-    "application" = "mastercard"
+    "application" = "mhdemo"
   }
 }
 

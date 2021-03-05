@@ -14,12 +14,12 @@ data "aws_ami" "ubuntu" {
   owners = ["amazon"] # Canonical
 }
 
-resource "aws_efs_file_system" "mastercard-log-volume" {
+resource "aws_efs_file_system" "mhdemo-log-volume" {
   creation_token = "ebs-lc-${var.short_region}-${var.environment}-${var.service_name}"
   encrypted      = "true"
 }
 
-resource "aws_launch_configuration" "mastercard-launch-config" {
+resource "aws_launch_configuration" "mhdemo-launch-config" {
   name_prefix   = "lc-${var.short_region}-${var.environment}-${var.service_name}"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
@@ -45,9 +45,9 @@ resource "aws_launch_configuration" "mastercard-launch-config" {
   }
 }
 
-resource "aws_autoscaling_group" "mastercard-asg" {
+resource "aws_autoscaling_group" "mhdemo-asg" {
   name                 = "asg-${var.short_region}-${var.environment}-${var.service_name}"
-  launch_configuration = aws_launch_configuration.mastercard-launch-config.name
+  launch_configuration = aws_launch_configuration.mhdemo-launch-config.name
   min_size             = 1
   max_size             = 2
 
