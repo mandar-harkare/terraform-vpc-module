@@ -16,12 +16,14 @@ This module deploys a basic Web application on AWS. Following resources will be 
     13. Auto Scaling Group Policy
     14. Cloudwatch Alarm to trigger the scaling
 
+
 ## Prequisites
     *   Terraform12
     *   Logged in to AWS Cli
     *   Environment Variables 
 Details can be found [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 You can provide your credentials via the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, environment variables, representing your AWS Access Key and AWS Secret Key, respectively. Note that setting your AWS credentials using either these (or legacy) environment variables will override the use of AWS_SHARED_CREDENTIALS_FILE and AWS_PROFILE. The AWS_DEFAULT_REGION and AWS_SESSION_TOKEN environment variables are also used, if applicable:
+
 
 ## Variables (terraform.tfvars)
     * environment: "dev" # dev|int|stage|pre|prod
@@ -35,6 +37,7 @@ You can provide your credentials via the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS
         "application" = "mhdemo"
       }
     * service_name: "mhdemo" (This will be used in every resource name, so would be easire to find out the resources after deployment.)
+
 
 ## Deploy
 ```
