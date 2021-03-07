@@ -13,6 +13,8 @@ This module deploys a basic Web application on AWS. Following resources will be 
     10. Tagret Group
     11. Launch Configuration
     12. Auto Scaling Group
+    13. Auto Scaling Group Policy
+    14. Cloudwatch Alarm to trigger the scaling
 
 ## Prequisites
     *   Terraform12
@@ -21,6 +23,18 @@ This module deploys a basic Web application on AWS. Following resources will be 
 Details can be found [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 You can provide your credentials via the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, environment variables, representing your AWS Access Key and AWS Secret Key, respectively. Note that setting your AWS credentials using either these (or legacy) environment variables will override the use of AWS_SHARED_CREDENTIALS_FILE and AWS_PROFILE. The AWS_DEFAULT_REGION and AWS_SESSION_TOKEN environment variables are also used, if applicable:
 
+## Variables (terraform.tfvars)
+    * environment: "dev" # dev|int|stage|pre|prod
+    * vpc_cidr: "10.0.0.0/16"
+    * public_subnets_cidr_1: ["10.0.0.0/24"]
+    * public_subnets_cidr_2: ["10.0.10.0/24"]
+    * private_subnets_cidr_1: ["10.0.16.0/20"]
+    * private_subnets_cidr_2: ["10.0.32.0/20"]
+    * availability_zones: ["us-east-1a", "us-east-1b"]
+    * aws_tags: {
+        "application" = "mhdemo"
+      }
+    * service_name: "mhdemo" (This will be used in every resource name, so would be easire to find out the resources after deployment.)
 
 ## Deploy
 ```
