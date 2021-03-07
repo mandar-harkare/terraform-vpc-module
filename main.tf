@@ -38,9 +38,7 @@ module "asg" {
   aws_tags              = "${var.aws_tags}"
   elb_id                = "${module.elb.elb_id}"
   environment           = "${var.environment}"
-  # private_sg_id         = "${module.vpc.public_sg_id}"
   private_sg_id         = "${module.vpc.private_sg_id}"
-  # private_subnet_ids    = ["${module.vpc.public_subnet_id_1}", "${module.vpc.public_subnet_id_2}"]
   private_subnet_ids    = ["${module.vpc.private_subnet_id_1}", "${module.vpc.private_subnet_id_2}"]
   availability_zones    = "${var.availability_zones}"
 }

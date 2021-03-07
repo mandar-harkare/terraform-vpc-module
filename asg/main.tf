@@ -29,11 +29,6 @@ data "aws_ami_ids" "ubuntu" {
   }
 }
 
-# resource "aws_efs_file_system" "mhdemo_log_volume" {
-#   creation_token = "ebs-lc-${var.short_region}-${var.environment}-${var.service_name}"
-#   encrypted      = "true"
-# }
-
 # data "aws_ebs_volume" "mhdemo_log_volume" {
 #   most_recent = true
 
@@ -54,7 +49,6 @@ resource "aws_launch_configuration" "mhdemo_launch_config" {
   instance_type   = "t2.micro"
   user_data       = file("install_apache.sh")
   security_groups = [var.private_sg_id]
-  key_name        = "demomh-key-pair"
   
   # dynamic "root_block_device" {
   #   content {
@@ -83,9 +77,7 @@ resource "aws_autoscaling_group" "mhdemo_asg" {
   desired_capacity      = 2
   max_size              = 4
   vpc_zone_identifier   = var.private_subnet_ids
-  # load_balancers = [
-  #   var.elb_id
-  # ]
+
   lifecycle {
     create_before_destroy = true
   }

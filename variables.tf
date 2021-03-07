@@ -3,14 +3,9 @@ variable "service_name" {
   default     = "mhdemo"
 }
 
-variable "stage" {
-  description = "Environment for deployment."
-  default     = "d"
-}
-
 variable "environment" {
-  description = "Environment for deployment."
-  default     = "d"
+  description = "Environment for deployment. dev|int|stage|pre|prod"
+  default     = "dev"
 }
 
 variable "aws_region" {
@@ -44,11 +39,6 @@ variable "aws_region_map" {
 variable "account_code" {
   description = "AWS account code."
   default     = 0000000000
-}
-
-variable "stage_full_name" {
-  description = "Full environment name for deployment."
-  default     = "dev"
 }
 
 variable "aws_tags" {
