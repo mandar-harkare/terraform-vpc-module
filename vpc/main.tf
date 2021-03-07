@@ -1,45 +1,6 @@
-resource "aws_dynamodb_table" "terraform_dynamodb_table" {
-  name         = "dyn-${var.short_region}-cpt-${var.stage}-${var.table_name}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  point_in_time_recovery = {
-    enabled = true
-  }
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  ttl {
-    enabled = true
-    attribute_name = "ttl"
-  }
-
-  tags = "${merge(var.aws_tags, var.aws_backup_tags)}"
-}
-
-resource "aws_dynamodb_table" "tenant_lock_dynamodb_table" {
-  name         = "dyn-${var.short_region}-cpt-${var.stage}-${var.service_name}-${var.tenant_lock_table_name}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  point_in_time_recovery = {
-    enabled = true
-  }
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  tags = "${merge(var.aws_tags, var.aws_backup_tags)}"
-}
-
 /*==== The VPC ======*/
-resource "aws_vpc" "mastercard_vpc" {
-  cidr_block           = "${var.vpc_cidr}"
+resource "aws_vpc" "mhdemo_vpc" {
+  cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags = {
@@ -48,104 +9,205 @@ resource "aws_vpc" "mastercard_vpc" {
 }
 /*==== Subnets ======*/
 /* Internet gateway for the public subnet */
-resource "aws_internet_gateway" "mastercard_ig" {
-  vpc_id = "${aws_vpc.mastercard_vpc.id}"
+resource "aws_internet_gateway" "mhdemo_ig" {
+  vpc_id = aws_vpc.mhdemo_vpc.id
   tags = {
     Name        = "igw-${var.short_region}-${var.environment}-${var.service_name}"
   }
 }
 /* Elastic IP for NAT */
-resource "aws_eip" "mastercard_nat_eip" {
+resource "aws_eip" "mhdemo_nat_eip_1" {
   vpc        = true
-  depends_on = [aws_internet_gateway.mastercard_ig]
+  depends_on = [aws_internet_gateway.mhdemo_ig]
+}
+resource "aws_eip" "mhdemo_nat_eip_2" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.mhdemo_ig]
 }
 /* NAT */
-resource "aws_nat_gateway" "mastercard_nat" {
-  allocation_id = "${aws_eip.mastercard_nat_eip.id}"
-  subnet_id     = "${element(aws_subnet.public_subnet.*.id, 0)}"
-  depends_on    = [aws_internet_gateway.mastercard_ig]
+resource "aws_nat_gateway" "mhdemo_nat_1" {
+  allocation_id = aws_eip.mhdemo_nat_eip_1.id
+  subnet_id     = element(aws_subnet.mhdemo_public_subnet_1.*.id, 0)
+  depends_on    = [aws_internet_gateway.mhdemo_ig]
   tags = {
-    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}"
-    Environment = "${var.environment}"
+    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}-1"
+    Environment = var.environment
   }
 }
-/* Public subnet */
-resource "aws_subnet" "mastercard_public_subnet" {
-  vpc_id                  = "${aws_vpc.mastercard_vpc.id}"
-  count                   = "${length(var.public_subnets_cidr)}"
-  cidr_block              = "${element(var.public_subnets_cidr,   count.index)}"
-  availability_zone       = "${element(var.availability_zones,   count.index)}"
+
+resource "aws_nat_gateway" "mhdemo_nat_2" {
+  allocation_id = aws_eip.mhdemo_nat_eip_2.id
+  subnet_id     = element(aws_subnet.mhdemo_public_subnet_2.*.id, 0)
+  depends_on    = [aws_internet_gateway.mhdemo_ig]
+  tags = {
+    Name        = "nat-${var.short_region}-${var.environment}-${var.service_name}-2"
+    Environment = var.environment
+  }
+}
+/* Public subnets */
+resource "aws_subnet" "mhdemo_public_subnet_1" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.public_subnets_cidr_1)
+  cidr_block              = element(var.public_subnets_cidr_1, count.index)
+  availability_zone       = element(var.availability_zones, 0)
   map_public_ip_on_launch = true
   tags = {
-    Name        = "public-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, count.index)}"
+    Name        = "public-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 0)}"
   }
 }
-/* Private subnet */
-resource "aws_subnet" "mastercard_private_subnet" {
-  vpc_id                  = "${aws_vpc.mastercard_vpc.id}"
-  count                   = "${length(var.private_subnets_cidr)}"
-  cidr_block              = "${element(var.private_subnets_cidr, count.index)}"
-  availability_zone       = "${element(var.availability_zones,   count.index)}"
+
+resource "aws_subnet" "mhdemo_public_subnet_2" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.public_subnets_cidr_2)
+  cidr_block              = element(var.public_subnets_cidr_2, count.index)
+  availability_zone       = element(var.availability_zones, 1)
+  map_public_ip_on_launch = true
+  tags = {
+    Name        = "public-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 1)}"
+  }
+}
+
+/* Private subnets */
+resource "aws_subnet" "mhdemo_private_subnet_1" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.private_subnets_cidr_1)
+  cidr_block              = element(var.private_subnets_cidr_1, count.index)
+  availability_zone       = element(var.availability_zones, 0)
   map_public_ip_on_launch = false
   tags = {
-    Name        = "private-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, count.index)}"
+    Name        = "private-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 0)}"
   }
 }
-/* Routing table for private subnet */
-resource "aws_route_table" "mastercard_private" {
-  vpc_id = "${aws_vpc.mastercard_vpc.id}"
+
+resource "aws_subnet" "mhdemo_private_subnet_2" {
+  vpc_id                  = aws_vpc.mhdemo_vpc.id
+  count                   = length(var.private_subnets_cidr_2)
+  cidr_block              = element(var.private_subnets_cidr_2, count.index)
+  availability_zone       = element(var.availability_zones, 1)
+  map_public_ip_on_launch = false
   tags = {
-    Name        = "private-route-table-${var.short_region}-${var.environment}-${var.service_name}"
+    Name        = "private-subnet-${var.short_region}-${var.environment}-${var.service_name}-${element(var.availability_zones, 1)}"
+  }
+}
+
+/* Routing table for private subnet */
+resource "aws_route_table" "mhdemo_private_1" {
+  vpc_id = aws_vpc.mhdemo_vpc.id
+  tags = {
+    Name        = "private-route-table-${var.short_region}-${var.environment}-${var.service_name}-1"
+  }
+}
+resource "aws_route_table" "mhdemo_private_2" {
+  vpc_id = aws_vpc.mhdemo_vpc.id
+  tags = {
+    Name        = "private-route-table-${var.short_region}-${var.environment}-${var.service_name}-2"
   }
 }
 /* Routing table for public subnet */
-resource "aws_route_table" "mastercard_public" {
-  vpc_id = "${aws_vpc.mastercard_vpc.id}"
+resource "aws_route_table" "mhdemo_public" {
+  vpc_id = aws_vpc.mhdemo_vpc.id
   tags = {
     Name        = "public-route-table-${var.short_region}-${var.environment}-${var.service_name}"
   }
 }
-resource "aws_route" "mastercard_public_internet_gateway" {
-  route_table_id         = "${aws_route_table.mastercard_public.id}"
+resource "aws_route" "mhdemo_public_internet_gateway" {
+  route_table_id         = aws_route_table.mhdemo_public.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = "${aws_internet_gateway.mastercard_ig.id}"
+  gateway_id             = aws_internet_gateway.mhdemo_ig.id
 }
-resource "aws_route" "mastercard_private_nat_gateway" {
-  route_table_id         = "${aws_route_table.mastercard_private.id}"
+resource "aws_route" "mhdemo_private_nat_gateway_1" {
+  route_table_id         = aws_route_table.mhdemo_private_1.id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "${aws_nat_gateway.mastercard_nat.id}"
+  nat_gateway_id         = aws_nat_gateway.mhdemo_nat_1.id
+}
+resource "aws_route" "mhdemo_private_nat_gateway_2" {
+  route_table_id         = aws_route_table.mhdemo_private_2.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.mhdemo_nat_2.id
 }
 /* Route table associations */
-resource "aws_route_table_association" "mastercard_public" {
-  count          = "${length(var.public_subnets_cidr)}"
-  subnet_id      = "${element(aws_subnet.mastercard_public_subnet.*.id, count.index)}"
-  route_table_id = "${aws_route_table.mastercard_public.id}"
+resource "aws_route_table_association" "mhdemo_public_1" {
+  count          = length(var.public_subnets_cidr_1)
+  subnet_id      = element(aws_subnet.mhdemo_public_subnet_1.*.id, 0)
+  route_table_id = aws_route_table.mhdemo_public.id
 }
-resource "aws_route_table_association" "mastercard_private" {
-  count          = "${length(var.private_subnets_cidr)}"
-  subnet_id      = "${element(aws_subnet.mastercard_private_subnet.*.id, count.index)}"
-  route_table_id = "${aws_route_table.mastercard_private.id}"
+
+resource "aws_route_table_association" "mhdemo_public_2" {
+  count          = length(var.public_subnets_cidr_2)
+  subnet_id      = element(aws_subnet.mhdemo_public_subnet_2.*.id, 0)
+  route_table_id = aws_route_table.mhdemo_public.id
 }
-/*==== VPC's Default Security Group ======*/
-resource "aws_security_group" "default" {
-  name        = "sg-${var.short_region}-${var.environment}-${var.service_name}"
-  description = "Default security group to allow inbound/outbound from the VPC"
-  vpc_id      = "${aws_vpc.mastercard_vpc.id}"
-  depends_on  = [aws_vpc.mastercard_vpc]
+
+resource "aws_route_table_association" "mhdemo_private_1" {
+  count          = length(var.private_subnets_cidr_1)
+  subnet_id      = element(aws_subnet.mhdemo_private_subnet_1.*.id, 0)
+  route_table_id = aws_route_table.mhdemo_private_1.id
+}
+
+resource "aws_route_table_association" "mhdemo_private_2" {
+  count          = length(var.private_subnets_cidr_2)
+  subnet_id      = element(aws_subnet.mhdemo_private_subnet_2.*.id, 0)
+  route_table_id = aws_route_table.mhdemo_private_2.id
+}
+
+/*==== VPC's Security Groups ======*/
+resource "aws_security_group" "mhdemo_public_sg" {
+  name        = "sec-pblc-${var.short_region}-${var.environment}-${var.service_name}"
+  description = "Public security group to allow inbound/outbound from the VPC"
+  vpc_id      = aws_vpc.mhdemo_vpc.id
+  depends_on  = [aws_vpc.mhdemo_vpc]
   ingress {
-    from_port = "0"
-    to_port   = "0"
-    protocol  = "-1"
-    self      = true
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-  
+  ingress {
+    description = "HTTP from VPC"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
-    from_port = "0"
-    to_port   = "0"
-    protocol  = "-1"
-    self      = "true"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Environment = "${var.environment}"
+
+  tags = var.aws_tags
+}
+
+resource "aws_security_group" "mhdemo_private_sg" {
+  name        = "sec-prvt-${var.short_region}-${var.environment}-${var.service_name}"
+  description = "Private security group to allow inbound/outbound from the VPC"
+  vpc_id      = aws_vpc.mhdemo_vpc.id
+  depends_on  = [aws_vpc.mhdemo_vpc]
+  ingress {
+    description = "HTTPs from LB"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    security_groups = [aws_security_group.mhdemo_public_sg.id]
   }
+
+  ingress {
+    description = "HTTP from LB"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    security_groups = [aws_security_group.mhdemo_public_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = var.aws_tags
 }

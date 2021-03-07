@@ -1,11 +1,11 @@
 variable "service_name" {
   description = "The string service name."
-  default     = "mastercard"
+  default     = "mhdemo"
 }
 
-variable "stage" {
-  description = "Environment for deployment."
-  default     = "d"
+variable "environment" {
+  description = "Environment for deployment. dev|int|stage|pre|prod"
+  default     = "dev"
 }
 
 variable "aws_region" {
@@ -15,7 +15,7 @@ variable "aws_region" {
 
 variable "aws_region_map" {
   description = "Forcepoint AWS region name by AWS region"
-  type        = "map"
+  type        = map
 
   default = {
     ap-south-1     = "aps1"
@@ -41,25 +41,41 @@ variable "account_code" {
   default     = 0000000000
 }
 
-variable "stage_full_name" {
-  description = "Full environment name for deployment."
-  default     = "dev"
-}
-
 variable "aws_tags" {
   description = "variable name for tagging"
-  type        = "map"
+  type        = map
   default     = {
-    "fp-application-version" = "unknown"
+    "application" = "mhdemo"
   }
 }
 
-variable "log_level" {
-  description = "Log Level"
+variable "vpc_cidr" {
+  description = "VPC cidr"
   default = "info"
 }
 
-variable "gateway_logging_level" {
-  description = "The Api Gateway logging level, defaults to ERROR"
-  default = "ERROR"
+variable "public_subnets_cidr_1" {
+  description = "Public Subnets cidr for first subnet"
+  default = ""
 }
+
+variable "private_subnets_cidr_1" {
+  description = "Private Subnets cidr for first subnet"
+  default = ""
+}
+
+variable "public_subnets_cidr_2" {
+  description = "Public Subnets cidr for second subnet"
+  default = ""
+}
+
+variable "private_subnets_cidr_2" {
+  description = "Private Subnets cidr for second subnet"
+  default = ""
+}
+
+variable "availability_zones" {
+  description = "Availability zines for subnets"
+  default = ""
+}
+
