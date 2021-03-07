@@ -8,3 +8,4 @@ availability_zones=["us-east-1a", "us-east-1b"]
 aws_tags={
     "application" = "mhdemo"
 }
+service_name="mhdemo"

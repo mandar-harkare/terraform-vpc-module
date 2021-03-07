@@ -82,3 +82,29 @@ resource "aws_autoscaling_group" "mhdemo_asg" {
     create_before_destroy = true
   }
 }
+
+resource "aws_autoscaling_policy" "mhdemo_asg_policy" {
+  name                   = "asg-pol-${var.short_region}-${var.environment}-${var.service_name}"
+  scaling_adjustment     = 2
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.mhdemo_asg.name
+}
+
+resource "aws_cloudwatch_metric_alarm" "mhdemo_cloudwatch_alarm" {
+  alarm_name          = "alarm-${var.short_region}-${var.environment}-${var.service_name}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "120"
+  statistic           = "Average"
+  threshold           = "80"
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.mhdemo_asg.name
+  }
+
+  alarm_description = "This metric monitors ec2 cpu utilization"
+  alarm_actions     = [aws_autoscaling_policy.mhdemo_asg_policy.arn]
+}

@@ -14,7 +14,7 @@ variable "aws_region" {
 }
 
 variable "aws_region_map" {
-  description = "Forcepoint AWS region name by AWS region"
+  description = "AWS region name by AWS region"
   type        = map
 
   default = {
