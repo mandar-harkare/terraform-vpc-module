@@ -18,7 +18,7 @@ This module deploys a basic Web application on AWS. Following resources will be 
 
 
 ## Prequisites
-    *   Terraform12
+    *   Terraform12 (This module is tested on Terraform v0.12.30)
     *   Logged in to AWS Cli
     *   Environment Variables 
 Details can be found [here](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
